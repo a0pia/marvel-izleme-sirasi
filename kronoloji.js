@@ -448,15 +448,18 @@ function renderFilmTree() {
   const solo = SOLO.map(id => BY_ID[id]);
 
   return `
-    <div class="ft-toolbar">
-      <p class="map-hint"><b>Ağacı yukarıdan aşağı takip et:</b> her ok, bir filmin hangisine nasıl bağlandığını yazar. Afişe dokununca o yapımın bütün bağlantılarını görürsün. Numaralar hikâye sırasıdır.</p>
-      <div class="zoom" role="group" aria-label="Yakınlaştırma">
+    <p class="map-hint"><b>Ağacı yukarıdan aşağı takip et:</b> her ok, bir filmin hangisine nasıl bağlandığını yazar. Afişe dokununca o yapımın bütün bağlantılarını görürsün.
+      <span class="zoom-tip">Büyütüp küçültmek için sağ üstteki düğmeleri kullan, <span class="tip-touch">iki parmakla sıkıştır</span><span class="tip-mouse">ya da Ctrl + tekerleği çevir</span>.</span></p>
+    <div class="ft-frame${ftFull ? " full" : ""}" id="ft-frame">
+      <div class="ft-controls" role="group" aria-label="Yakınlaştırma">
         <button type="button" data-zoom="out" aria-label="Uzaklaştır">−</button>
-        <button type="button" data-zoom="fit">Sığdır</button>
+        <input type="range" id="ft-range" min="${ZMIN * 100}" max="${ZMAX * 100}" step="5" value="100" aria-label="Yakınlık">
+        <span class="ft-pct" id="ft-pct">100%</span>
         <button type="button" data-zoom="in" aria-label="Yakınlaştır">+</button>
+        <button type="button" data-zoom="fit" class="txt">Sığdır</button>
+        <button type="button" data-zoom="full" aria-label="${ftFull ? "Tam ekrandan çık" : "Tam ekran"}">${ftFull ? ICON_SHRINK : ICON_EXPAND}</button>
       </div>
-    </div>
-    <div class="ft-scroll" id="ft-scroll">
+      <div class="ft-scroll" id="ft-scroll">
       <div class="ft-sizer" id="ft-sizer">
         <div class="ft-canvas" id="ft-canvas" style="width:${W}px;height:${H}px">
           <svg class="map-edges" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${lines}</svg>
@@ -464,12 +467,12 @@ function renderFilmTree() {
           <span class="ft-start" style="left:${at[TREE_ROOT].cx}px;top:${at[TREE_ROOT].top - 30}px">Başlangıç · 2008</span>
           ${nodes}
         </div>
+        </div>
       </div>
     </div>
-    <p class="map-hint-mobile">Ağacı parmağınla kaydırarak gez; −/+ ile yakınlaştır.</p>
 
     <section class="ft-finale" style="--fc:${FAMILIES[finale.fam].color}">
-      <div class="ft-finale-title">▼ Bütün dallar burada birleşiyor ▼</div>
+      <div class="ft-finale-title">▼ Bütün dallar burada birleşiyor</div>
       <div class="ft-finale-body">
         ${nodeHtml(finale, `position:relative;width:${FT.NW + 30}px;`)}
         <div class="ft-finale-links">
@@ -485,64 +488,162 @@ function renderFilmTree() {
     </section>` : ""}`;
 }
 
-// ---------- Yakınlaştırma ve sürükleyerek gezinme ----------
-function defaultZoom() {
-  return window.innerWidth < 700 ? 0.8 : 0.9;
+// ---------- Yakınlaştırma ve gezinme ----------
+const ZMIN = 0.1;
+const ZMAX = 1.6;
+let ftFull = false;
+let userZoomed = false;
+
+function ftEls() {
+  return {
+    frame: document.getElementById("ft-frame"),
+    scroller: document.getElementById("ft-scroll"),
+    sizer: document.getElementById("ft-sizer"),
+    canvas: document.getElementById("ft-canvas"),
+  };
 }
 
-function applyZoom(z, keepCenter) {
-  const scroller = document.getElementById("ft-scroll");
-  const sizer = document.getElementById("ft-sizer");
-  const canvas = document.getElementById("ft-canvas");
+function maxFrameH() {
+  return window.innerWidth <= 600 ? Math.max(380, window.innerHeight * 0.68) : Math.min(940, Math.max(420, window.innerHeight * 0.74));
+}
+
+function fitZoom() {
+  const { scroller } = ftEls();
+  const { W, H } = TREE_LAYOUT;
+  const h = ftFull ? scroller.clientHeight : maxFrameH();
+  return Math.min((scroller.clientWidth - 16) / W, (h - 16) / H);
+}
+
+// px, py: ekrandaki sabit kalacak nokta (kaydırma kutusuna göre)
+function setZoom(z, px, py) {
+  const { scroller, sizer, canvas } = ftEls();
   if (!scroller) return;
   const { W, H } = TREE_LAYOUT;
   const old = zoom || z;
-  const cx = (scroller.scrollLeft + scroller.clientWidth / 2) / old;
-  zoom = Math.min(1.4, Math.max(0.25, z));
+  if (px === undefined) { px = scroller.clientWidth / 2; py = scroller.clientHeight / 2; }
+  const cx = (scroller.scrollLeft + px - sizer.offsetLeft) / old;
+  const cy = (scroller.scrollTop + py) / old;
+  zoom = Math.min(ZMAX, Math.max(ZMIN, z));
   sizer.style.width = W * zoom + "px";
   sizer.style.height = H * zoom + "px";
   canvas.style.transform = `scale(${zoom})`;
-  if (keepCenter) scroller.scrollLeft = cx * zoom - scroller.clientWidth / 2;
+  // Ağaç küçükken çerçeve de küçülsün, altta boşluk kalmasın
+  scroller.style.height = ftFull ? "" : Math.round(Math.min(maxFrameH(), Math.max(240, H * zoom + 20))) + "px";
+  scroller.scrollLeft = cx * zoom + sizer.offsetLeft - px;
+  scroller.scrollTop = cy * zoom - py;
+  const pct = Math.round(zoom * 100);
+  const range = document.getElementById("ft-range");
+  if (range) range.value = pct;
+  const label = document.getElementById("ft-pct");
+  if (label) label.textContent = pct + "%";
 }
 
-function centerOnRoot() {
-  const scroller = document.getElementById("ft-scroll");
+function fitTree() {
+  const { scroller } = ftEls();
   if (!scroller) return;
-  scroller.scrollLeft = TREE_LAYOUT.at[TREE_ROOT].cx * zoom - scroller.clientWidth / 2;
+  setZoom(fitZoom());
+  scroller.scrollLeft = 0;
+  scroller.scrollTop = 0;
 }
+
+function setFull(on) {
+  ftFull = on;
+  const { frame } = ftEls();
+  if (!frame) return;
+  frame.classList.toggle("full", on);
+  document.body.classList.toggle("ft-lock", on);
+  const btn = frame.querySelector('[data-zoom="full"]');
+  btn.setAttribute("aria-label", on ? "Tam ekrandan çık" : "Tam ekran");
+  btn.innerHTML = on ? ICON_SHRINK : ICON_EXPAND;
+  if (!userZoomed) fitTree();
+}
+
+const ICON_EXPAND = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+const ICON_SHRINK = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
 
 viewEl.addEventListener("click", e => {
   const zb = e.target.closest("[data-zoom]");
   if (!zb) return;
-  const scroller = document.getElementById("ft-scroll");
-  if (zb.dataset.zoom === "in") applyZoom(zoom * 1.2, true);
-  if (zb.dataset.zoom === "out") applyZoom(zoom / 1.2, true);
-  if (zb.dataset.zoom === "fit") {
-    applyZoom((scroller.clientWidth - 8) / TREE_LAYOUT.W, false);
-    scroller.scrollLeft = 0;
-  }
+  const action = zb.dataset.zoom;
+  if (action === "in") { userZoomed = true; setZoom(zoom * 1.25); }
+  if (action === "out") { userZoomed = true; setZoom(zoom / 1.25); }
+  if (action === "fit") { userZoomed = false; fitTree(); }
+  if (action === "full") setFull(!ftFull);
 });
 
-// Fareyle sürükleyerek yatay/dikey gezinme (dokunmatikte tarayıcı kaydırması kullanılır)
+viewEl.addEventListener("input", e => {
+  if (e.target.id !== "ft-range") return;
+  userZoomed = true;
+  setZoom(e.target.value / 100);
+});
+
+// Ctrl/Cmd + tekerlek veya trackpad'de iki parmak sıkıştırma
+viewEl.addEventListener("wheel", e => {
+  const scroller = e.target.closest("#ft-scroll");
+  if (!scroller || !(e.ctrlKey || e.metaKey)) return;
+  e.preventDefault();
+  const r = scroller.getBoundingClientRect();
+  userZoomed = true;
+  setZoom(zoom * Math.exp(-e.deltaY * 0.01), e.clientX - r.left, e.clientY - r.top);
+}, { passive: false });
+
+// Fareyle sürükleme + dokunmatikte iki parmakla yakınlaştırma
 let drag = null;
+const touches = new Map();
+let pinch = null;
+
 viewEl.addEventListener("pointerdown", e => {
   const scroller = e.target.closest("#ft-scroll");
-  if (!scroller || e.pointerType !== "mouse" || e.button !== 0 || e.target.closest("[data-node]")) return;
-  drag = { x: e.clientX, y: e.clientY, left: scroller.scrollLeft, scroller, moved: false };
+  if (!scroller) return;
+  if (e.pointerType === "touch") {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 2) {
+      const [a, b] = [...touches.values()];
+      pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom };
+    }
+    return;
+  }
+  if (e.pointerType !== "mouse" || e.button !== 0 || e.target.closest("[data-node]")) return;
+  drag = { x: e.clientX, y: e.clientY, left: scroller.scrollLeft, top: scroller.scrollTop, scroller, moved: false };
   scroller.classList.add("dragging");
 });
+
 window.addEventListener("pointermove", e => {
+  if (touches.has(e.pointerId)) {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && touches.size === 2) {
+      const [a, b] = [...touches.values()];
+      const { scroller } = ftEls();
+      const r = scroller.getBoundingClientRect();
+      userZoomed = true;
+      setZoom(pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y) / pinch.dist,
+        (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top);
+    }
+    return;
+  }
   if (!drag) return;
   const dx = e.clientX - drag.x;
   const dy = e.clientY - drag.y;
   if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
   drag.scroller.scrollLeft = drag.left - dx;
-  window.scrollBy(0, -(e.movementY || 0));
+  drag.scroller.scrollTop = drag.top - dy;
 });
-window.addEventListener("pointerup", () => {
+
+function endPointer(e) {
+  if (touches.delete(e.pointerId) && touches.size < 2) pinch = null;
   if (!drag) return;
   drag.scroller.classList.remove("dragging");
   setTimeout(() => { drag = null; }, 0);
+}
+window.addEventListener("pointerup", endPointer);
+window.addEventListener("pointercancel", endPointer);
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && ftFull && !selected) setFull(false);
+});
+
+window.addEventListener("resize", () => {
+  if (prefs.view === "map" && !userZoomed) fitTree();
 });
 
 function applySelection() {
@@ -706,18 +807,22 @@ let lastScroll = null;
 
 function render() {
   const sc = document.getElementById("ft-scroll");
-  lastScroll = sc ? sc.scrollLeft : null;
+  lastScroll = sc ? { left: sc.scrollLeft, top: sc.scrollTop } : null;
   const items = CHRONO.filter(matches);
   viewEl.innerHTML = items.length
     ? (prefs.view === "tree" ? renderTree(items) : renderFilmTree())
     : '<div class="empty">Bu filtreye uyan yapım yok.</div>';
   if (prefs.view === "map") {
-    const first = zoom === null;
-    applyZoom(zoom || defaultZoom(), false);
-    if (first) centerOnRoot();
-    else if (lastScroll !== null) document.getElementById("ft-scroll").scrollLeft = lastScroll;
+    if (zoom === null || !userZoomed) {
+      fitTree();
+    } else {
+      setZoom(zoom);
+      const sc = document.getElementById("ft-scroll");
+      if (lastScroll) { sc.scrollLeft = lastScroll.left; sc.scrollTop = lastScroll.top; }
+    }
   } else {
     zoom = null;
+    if (ftFull) { ftFull = false; document.body.classList.remove("ft-lock"); }
   }
   applySelection();
   updateProgress(items);

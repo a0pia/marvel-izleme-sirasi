@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doomsday'e Kadar Marvel İzleme Sırası</title>
+  <meta name="description" content="Avengers: Doomsday'den önce hangi Marvel filmlerini ve dizilerini hangi sırayla izlemelisin? İzlediklerini işaretle, ilerlemeni takip et.">
+  <meta property="og:title" content="Doomsday'e Kadar Marvel İzleme Sırası">
+  <meta property="og:description" content="Avengers: Doomsday'den önce hangi Marvel yapımlarını hangi sırayla izlemelisin?">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23e62429'/><text x='50' y='70' font-size='58' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' fill='white'>M</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Marvel Sinematik Evreni · İzleme Rehberi</p>
+      <h1>Avengers: <span>Doomsday</span>'e Kadar<br>Ne İzlemeliyim?</h1>
+      <p class="lead">Doomsday'e hazır girmek için Marvel filmlerini ve önemli dizileri hangi sırayla izleyeceğin burada. İzlediklerini işaretle, ilerlemen bu tarayıcıda kaydedilsin.</p>
+
+      <div class="countdown" id="countdown" aria-live="polite">
+        <div class="cd-label">Vizyona kalan süre · 18 Aralık 2026</div>
+        <div class="cd-grid">
+          <div><b id="cd-d">--</b><small>gün</small></div>
+          <div><b id="cd-h">--</b><small>saat</small></div>
+          <div><b id="cd-m">--</b><small>dakika</small></div>
+          <div><b id="cd-s">--</b><small>saniye</small></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar" id="toolbar">
+    <div class="toolbar-inner">
+      <div class="progress-wrap">
+        <div class="progress-text"><span id="progress-count">0 / 0</span> izlendi <span id="progress-pct" class="pct">%0</span></div>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+      </div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Liste türü">
+          <button type="button" data-mode="full" class="active">Tam liste</button>
+          <button type="button" data-mode="short">Kısa yol</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="show-series" checked><span></span>Diziler</label>
+        <label class="toggle"><input type="checkbox" id="show-bonus"><span></span>Bonus X-Men</label>
+        <label class="toggle"><input type="checkbox" id="hide-watched"><span></span>İzlenenleri gizle</label>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="info">
+      <div class="info-card">
+        <h2>Nasıl kullanılır?</h2>
+        <ul>
+          <li><b>Tam liste:</b> Tüm filmler vizyon sırasıyla. Hikâyeyi en iyi bu sıra anlatır.</li>
+          <li><b>Kısa yol:</b> Vaktin azsa sadece <span class="badge key">ÖNEMLİ</span> işaretlileri izle.</li>
+          <li><b>Diziler:</b> Disney+ dizilerinden Doomsday'i doğrudan etkileyenleri listeye ekler.</li>
+          <li><b>Bonus X-Men:</b> Doomsday'de dönen eski Fox X-Men kadrosu için tazeleme filmleri.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div id="list"></div>
+
+    <section class="info skip">
+      <div class="info-card">
+        <h2>Atlayabileceklerin</h2>
+        <p>Şu yapımlar keyifli ama Doomsday'i anlamak için şart değil: <i>What If...?</i>, <i>Moon Knight</i>, <i>She-Hulk</i>, <i>Secret Invasion</i>, <i>Echo</i>, <i>Agatha All Along</i>, <i>Daredevil: Born Again</i>, <i>Ironheart</i>, <i>Wonder Man</i>, <i>Werewolf by Night</i> ve <i>Guardians of the Galaxy Holiday Special</i>.</p>
+      </div>
+    </section>
+
+    <div class="reset-row">
+      <button type="button" id="reset" class="reset">İlerlememi sıfırla</button>
+    </div>
+  </main>
+
+  <footer>
+    <p>Hayran yapımı, resmî olmayan bir rehberdir. Marvel Studios veya Disney ile bağlantısı yoktur. Tüm isimler ilgili hak sahiplerine aittir.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

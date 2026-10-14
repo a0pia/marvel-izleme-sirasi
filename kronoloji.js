@@ -139,7 +139,8 @@ function escapeHtml(s) {
 }
 
 const watched = new Set(load(STORE_KEY, []));
-const prefs = Object.assign({ view: "table", type: "all", fam: "all" }, load(PREFS_KEY, {}));
+const prefs = Object.assign({ view: "map", type: "all", fam: "all" }, load(PREFS_KEY, {}));
+if (prefs.view !== "tree") prefs.view = "map";
 
 CHRONO.forEach((item, i) => { item.n = i + 1; });
 
@@ -162,64 +163,332 @@ function checkAttrs(item) {
           aria-label="${escapeHtml(item.en)} — ${done ? "izlendi" : "izlenmedi"}"`;
 }
 
-// ---------- Tablo görünümü ----------
-function renderTable(items) {
-  let rows = "";
-  for (const era of ERAS) {
-    const list = items.filter(i => i.era === era.id);
-    if (!list.length) continue;
-    rows += `
-      <tr class="era-row">
-        <td class="c-trunk"><span class="era-node"></span></td>
-        <td colspan="6"><span class="era-name">${era.name}</span><span class="era-desc">${era.desc}</span></td>
-      </tr>`;
-    for (const item of list) {
-      const fam = FAMILIES[item.fam];
-      const done = watched.has(item.id);
-      rows += `
-        <tr class="row${done ? " watched" : ""}${item.upcoming ? " upcoming" : ""}" style="--fc:${fam.color}" ${checkAttrs(item)}>
-          <td class="c-trunk"><span class="node">${item.n}</span></td>
-          <td class="c-title">
-            <div class="t-wrap">
-              ${poster(item, "thumb")}
-              <div>
-                <div class="t-en">${escapeHtml(item.en)}</div>
-                ${item.tr ? `<div class="t-tr">${escapeHtml(item.tr)}</div>` : ""}
-                <div class="t-mobile-meta">
-                  <span class="chip type-${item.type}">${TYPE_LABEL[item.type]}</span>
-                  <span class="chip when">${escapeHtml(item.when)}</span>
-                  <span class="chip fam"><i></i>${fam.name}</span>
-                </div>
-              </div>
-            </div>
-          </td>
-          <td class="c-type"><span class="chip type-${item.type}">${TYPE_LABEL[item.type]}</span></td>
-          <td class="c-when">${escapeHtml(item.when)}</td>
-          <td class="c-fam"><span class="chip fam"><i></i>${fam.name}</span></td>
-          <td class="c-rel">${item.rel}</td>
-          <td class="c-check"><span class="mini-check">${CHECK_SVG}</span></td>
-        </tr>`;
-    }
+// ---------- Bağlantı haritası ----------
+// [kaynak, hedef, neden] — ok kaynaktan hedefe, hikâye sırasıyla ileri doğru
+const EDGES = [
+  ["eyes-of-wakanda", "black-panther", "Wakanda'nın gizli tarihi ve Hatut Zeraze savaşçıları"],
+  ["captain-america-tfa", "captain-marvel", "Tesseract'ın izi 1990'lara uzanıyor"],
+  ["captain-america-tfa", "avengers", "Buzdan çıkan Steve Rogers ve Tesseract"],
+  ["captain-america-tfa", "winter-soldier", "Ölü sanılan Bucky, Kış Askeri olarak dönüyor"],
+  ["captain-marvel", "avengers", "Fury'nin \"Yenilmezler\" fikri Carol'dan doğuyor"],
+  ["captain-marvel", "endgame", "Fury'nin çağrı cihazı Carol'ı geri getiriyor"],
+  ["captain-marvel", "secret-invasion", "Skrull'lar Dünya'ya yerleşiyor"],
+  ["captain-marvel", "the-marvels", "Carol ve küçük Monica Rambeau"],
+  ["iron-man", "iron-man-2", "\"Ben Iron Man'im\" itirafının sonuçları"],
+  ["iron-man-2", "thor", "Sahne sonrası: Mjölnir New Mexico'da bulunuyor"],
+  ["iron-man-2", "avengers", "Nick Fury ve Black Widow, Yenilmezler Girişimi"],
+  ["incredible-hulk", "avengers", "Bruce Banner takıma katılıyor"],
+  ["incredible-hulk", "she-hulk", "Banner'ın kanı kuzeni Jennifer'a geçiyor"],
+  ["incredible-hulk", "brave-new-world", "General Ross ve Samuel Sterns geri dönüyor"],
+  ["thor", "avengers", "Loki, Tesseract'ı ele geçiriyor"],
+  ["thor", "thor-dark-world", "Thor ve Loki'nin hikâyesi sürüyor"],
+  ["avengers", "iron-man-3", "New York savaşı Tony'de travma bırakıyor"],
+  ["avengers", "gotg", "Sahne sonrası: Thanos ilk kez görünüyor"],
+  ["avengers", "age-of-ultron", "Loki'nin asası Ultron ve Vision'ı doğuruyor"],
+  ["avengers", "hawkeye", "Kate Bishop, New York savaşında Hawkeye'ı görüyor"],
+  ["iron-man-3", "shang-chi", "Sahte Mandarin Trevor Slattery ve gerçek On Halka"],
+  ["thor-dark-world", "gotg", "Aether, Koleksiyoncu'ya teslim ediliyor"],
+  ["thor-dark-world", "ragnarok", "Odin'in tahtında kılık değiştirmiş Loki"],
+  ["winter-soldier", "age-of-ultron", "Sahne sonrası: Wanda ve Pietro"],
+  ["winter-soldier", "civil-war", "Steve, Bucky'yi korumaya devam ediyor"],
+  ["gotg", "gotg-2", "Koruyucular'ın yeni macerası"],
+  ["gotg", "infinity-war", "Gamora, Nebula ve Thanos'un kızları"],
+  ["gotg-2", "i-am-groot", "Bebek Groot'un maceraları"],
+  ["gotg-2", "gotg-3", "Sahne sonrası: Adam Warlock"],
+  ["age-of-ultron", "civil-war", "Sokovia felaketi, Sokovia Anlaşmaları'nı getiriyor"],
+  ["age-of-ultron", "ragnarok", "Hulk bir Quinjet ile uzaya kaçıyor"],
+  ["age-of-ultron", "wandavision", "Wanda ve Vision'ın hikâyesi başlıyor"],
+  ["ant-man", "civil-war", "Scott Lang, Kaptan'ın ekibine katılıyor"],
+  ["ant-man", "ant-man-wasp", "Hope, Eşek Arısı kıyafetini giyiyor"],
+  ["civil-war", "black-widow", "Natasha anlaşmaları çiğnediği için kaçak"],
+  ["civil-war", "black-panther", "T'Chaka ölüyor, T'Challa kral oluyor"],
+  ["civil-war", "homecoming", "Tony, Peter Parker'ı keşfediyor"],
+  ["civil-war", "infinity-war", "Bölünmüş Yenilmezler Thanos'a karşı"],
+  ["black-widow", "hawkeye", "Yelena, Natasha'nın ölümünden Clint'i sorumlu tutuyor"],
+  ["black-widow", "thunderbolts", "Yelena ve Red Guardian"],
+  ["black-panther", "infinity-war", "Son savaş Wakanda'da"],
+  ["black-panther", "wakanda-forever", "T'Challa'nın mirası"],
+  ["homecoming", "infinity-war", "Peter, Tony ile birlikte uzaya gidiyor"],
+  ["homecoming", "far-from-home", "Peter'ın lise hayatı ve Örümcek-Adam kimliği"],
+  ["doctor-strange", "ragnarok", "Strange, Thor'un Odin'i bulmasına yardım ediyor"],
+  ["doctor-strange", "infinity-war", "Strange, Zaman Taşı'nın koruyucusu"],
+  ["ragnarok", "infinity-war", "Asgard gemisine Thanos saldırıyor"],
+  ["ragnarok", "love-and-thunder", "Korg, Valkyrie ve Yeni Asgard"],
+  ["ant-man-wasp", "endgame", "Kuantum Âlemi zaman yolculuğunun anahtarı oluyor"],
+  ["ant-man-wasp", "thunderbolts", "Ghost (Ava Starr) geri dönüyor"],
+  ["ant-man-wasp", "quantumania", "Janet'in Kuantum Âlemi'ndeki sırları"],
+  ["infinity-war", "endgame", "Parmak şıklatmasının ardından"],
+  ["endgame", "loki-1", "2012'deki Loki, Tesseract ile kaçıyor"],
+  ["endgame", "wandavision", "Vision'ın kaybı Wanda'yı yıkıyor"],
+  ["endgame", "falcon-ws", "Steve kalkanı Sam'e veriyor"],
+  ["endgame", "far-from-home", "Dünya Tony Stark'ın yasını tutuyor"],
+  ["endgame", "hawkeye", "Clint'in Ronin geçmişi ve Natasha'nın kaybı"],
+  ["endgame", "love-and-thunder", "Thor, Koruyucular ile yola çıkıyor"],
+  ["endgame", "doomsday", "Yenilmezler yeniden toplanıyor"],
+  ["loki-1", "loki-2", "TVA ve O Kalır'ın düşüşü"],
+  ["loki-1", "what-if", "Kutsal zaman çizgisi dallara ayrılıyor"],
+  ["loki-1", "quantumania", "O Kalır'ın bir varyantı: Kang"],
+  ["loki-2", "deadpool-wolverine", "TVA ve Loki'nin Zaman Ağacı"],
+  ["loki-2", "doomsday", "Loki, çoklu evrenin bekçisi olarak dönüyor"],
+  ["wandavision", "multiverse-of-madness", "Darkhold, Wanda'yı Scarlet Witch'e çeviriyor"],
+  ["wandavision", "agatha", "Agatha Harkness, Westview'den kurtuluyor"],
+  ["wandavision", "the-marvels", "Monica Rambeau güçlerini kazanıyor"],
+  ["falcon-ws", "thunderbolts", "Valentina ve John Walker sahneye çıkıyor"],
+  ["falcon-ws", "brave-new-world", "Sam, yeni Kaptan Amerika"],
+  ["shang-chi", "wonder-man", "Trevor Slattery geri dönüyor"],
+  ["shang-chi", "doomsday", "Shang-Chi, Doomsday kadrosunda"],
+  ["eternals", "brave-new-world", "Tiamut'un cesedinden adamantium çıkıyor"],
+  ["far-from-home", "no-way-home", "Mysterio, Peter'ın kimliğini ifşa ediyor"],
+  ["no-way-home", "multiverse-of-madness", "Çoklu evrende açılan yarıklar"],
+  ["no-way-home", "brand-new-day", "Artık kimse Peter Parker'ı hatırlamıyor"],
+  ["multiverse-of-madness", "doomsday", "Evren çarpışmaları (incursion)"],
+  ["hawkeye", "echo", "Maya Lopez ve Kingpin"],
+  ["echo", "daredevil-born-again", "Kingpin New York'a dönüyor"],
+  ["wakanda-forever", "ironheart", "Riri Williams'ın hikâyesi sürüyor"],
+  ["wakanda-forever", "doomsday", "Shuri ve Namor, Doomsday'de"],
+  ["she-hulk", "daredevil-born-again", "Matt Murdock'ın avukatlık hayatı"],
+  ["ms-marvel", "the-marvels", "Kamala'nın bilekliği Carol ile yer değiştiriyor"],
+  ["love-and-thunder", "doomsday", "Thor, Doomsday'de"],
+  ["holiday-special", "gotg-3", "Koruyucular'ın yeni yuvası Knowhere"],
+  ["daredevil-born-again", "brand-new-day", "Punisher, Örümcek-Adam ile karşılaşıyor"],
+  ["brave-new-world", "thunderbolts", "Valentina'nın yeni ekibi ve Yenilmezler tartışması"],
+  ["thunderbolts", "doomsday", "\"Yeni Yenilmezler\" ve sahne sonrası"],
+  ["the-marvels", "doomsday", "Sahne sonrası: X-Men'den Beast geliyor"],
+  ["what-if", "marvel-zombies", "Zombi evreninin devamı"],
+  ["deadpool-wolverine", "doomsday", "Fox X-Men evreni MCU ile buluşuyor"],
+  ["fantastic-four", "doomsday", "Sahne sonrası: Doktor Doom ortaya çıkıyor"],
+];
+
+// Haritadaki sütunlar (şeritler)
+const LANES = [
+  { name: "Kozmik", fams: ["cosmic"] },
+  { name: "Kaptan Amerika & Black Widow", fams: ["cap", "widow"] },
+  { name: "Hawkeye & Yeni Kahramanlar", fams: ["hawkeye", "heroes"] },
+  { name: "Iron Man & Örümcek-Adam", fams: ["ironman", "spidey"] },
+  { name: "Yenilmezler", fams: ["avengers"] },
+  { name: "Thor & Hulk", fams: ["thor", "hulk"] },
+  { name: "Koruyucular", fams: ["gotg"] },
+  { name: "Büyü & Wakanda", fams: ["magic", "wakanda"] },
+  { name: "Karınca Adam & Çoklu Evren", fams: ["antman", "multiverse"] },
+];
+
+const LANE_OF = {};
+LANES.forEach((lane, i) => lane.fams.forEach(f => { LANE_OF[f] = i; }));
+
+const BY_ID = {};
+CHRONO.forEach(item => { BY_ID[item.id] = item; });
+
+function mapMetrics() {
+  return window.innerWidth < 700
+    ? { LW: 96, PW: 60, PH: 90, NH: 128, RH: 168, HEAD: 64 }
+    : { LW: 120, PW: 74, PH: 111, NH: 152, RH: 196, HEAD: 64 };
+}
+
+let selected = null;
+let mapEdges = [];
+
+function renderMap(items) {
+  const M = mapMetrics();
+  const ids = new Set(items.map(i => i.id));
+  mapEdges = EDGES.filter(([a, b]) => ids.has(a) && ids.has(b));
+
+  // Satırlar: bir yapım, bağlandığı tüm yapımların ve şeridindeki öncekinin altına yerleşir
+  const preds = {};
+  mapEdges.forEach(([a, b]) => (preds[b] = preds[b] || []).push(a));
+  const row = {};
+  const laneLast = LANES.map(() => -1);
+  for (const item of items) {
+    const lane = LANE_OF[item.fam];
+    let r = laneLast[lane] + 1;
+    for (const p of preds[item.id] || []) r = Math.max(r, row[p] + 1);
+    row[item.id] = r;
+    laneLast[lane] = r;
+  }
+
+  const rows = Math.max(...Object.values(row)) + 1;
+  const W = LANES.length * M.LW;
+  const H = M.HEAD + rows * M.RH;
+  const pos = {};
+  for (const item of items) {
+    pos[item.id] = { cx: LANE_OF[item.fam] * M.LW + M.LW / 2, top: M.HEAD + row[item.id] * M.RH };
+  }
+
+  // Aynı afişe gelen/çıkan okları yatayda biraz ayır
+  const outs = {}, ins = {};
+  mapEdges.forEach(e => {
+    (outs[e[0]] = outs[e[0]] || []).push(e);
+    (ins[e[1]] = ins[e[1]] || []).push(e);
+  });
+  const spread = (list, key, id) => {
+    list.sort((x, y) => pos[x[key]].cx - pos[y[key]].cx);
+    const step = Math.min(12, (M.PW * 0.8) / Math.max(1, list.length - 1));
+    return list.findIndex(e => e[key] === id) * step - ((list.length - 1) * step) / 2;
+  };
+
+  let paths = "";
+  for (const e of mapEdges) {
+    const [a, b] = e;
+    const color = FAMILIES[BY_ID[a].fam].color;
+    const x1 = pos[a].cx + spread(outs[a], 1, b);
+    const y1 = pos[a].top + M.NH;
+    const x2 = pos[b].cx + spread(ins[b], 0, a);
+    const y2 = pos[b].top - 4;
+    const dy = Math.max(36, (y2 - y1) * 0.45);
+    paths += `
+      <g class="edge" data-from="${a}" data-to="${b}">
+        <path d="M${x1},${y1} C${x1},${y1 + dy} ${x2},${y2 - dy} ${x2},${y2 - 8}" stroke="${color}"/>
+        <polygon points="${x2 - 5},${y2 - 10} ${x2 + 5},${y2 - 10} ${x2},${y2}" fill="${color}"/>
+      </g>`;
+  }
+
+  let lanes = "";
+  LANES.forEach((lane, i) => {
+    const dots = lane.fams.map(f => `<i style="background:${FAMILIES[f].color}"></i>`).join("");
+    lanes += `
+      <div class="lane-line" style="left:${i * M.LW + M.LW / 2}px;top:${M.HEAD - 8}px;height:${H - M.HEAD}px"></div>
+      <div class="lane-head" style="left:${i * M.LW}px;width:${M.LW}px">${dots}<span>${lane.name}</span></div>`;
+  });
+
+  let nodes = "";
+  for (const item of items) {
+    const p = pos[item.id];
+    const done = watched.has(item.id);
+    nodes += `
+      <button type="button" class="mnode${done ? " watched" : ""}${item.upcoming ? " upcoming" : ""}" data-node="${item.id}"
+              style="left:${p.cx - (M.LW - 10) / 2}px;top:${p.top}px;width:${M.LW - 10}px;--fc:${FAMILIES[item.fam].color};--pw:${M.PW}px;--ph:${M.PH}px"
+              aria-label="${escapeHtml(item.en)}: bağlantıları göster">
+        <span class="mposter">
+          ${poster(item, "")}
+          <span class="mn">${item.n}</span>
+          <span class="mcheck">${CHECK_SVG}</span>
+        </span>
+        <span class="mtitle">${escapeHtml(item.en)}</span>
+      </button>`;
   }
 
   return `
-    <div class="table-wrap">
-      <table class="chrono-table">
-        <thead>
-          <tr>
-            <th class="c-trunk">#</th>
-            <th>Yapım</th>
-            <th class="c-type">Tür</th>
-            <th class="c-when">Hikâye zamanı</th>
-            <th class="c-fam">Seri</th>
-            <th class="c-rel">Vizyon</th>
-            <th class="c-check"><span class="sr-only">İzlendi</span></th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+    <p class="map-hint">
+      <b>Bir afişe dokun:</b> hangi yapımlardan geldiğini ve nereye bağlandığını gör. Oklar izleme yönünü gösterir; numaralar hikâye sırasıdır.
+      <span class="map-hint-mobile">Haritayı parmağınla yana kaydırabilirsin.</span>
+    </p>
+    <div class="map-scroll">
+      <div class="map" style="width:${W}px;height:${H}px">
+        ${lanes}
+        <svg class="map-edges" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${paths}</svg>
+        ${nodes}
+      </div>
     </div>`;
 }
+
+function applySelection() {
+  const map = viewEl.querySelector(".map");
+  if (!map) return renderPanel();
+  const rel = new Set();
+  if (selected) {
+    mapEdges.forEach(([a, b]) => {
+      if (a === selected) rel.add(b);
+      if (b === selected) rel.add(a);
+    });
+  }
+  map.classList.toggle("has-sel", !!selected);
+  map.querySelectorAll(".mnode").forEach(n => {
+    n.classList.toggle("sel", n.dataset.node === selected);
+    n.classList.toggle("rel", rel.has(n.dataset.node));
+  });
+  map.querySelectorAll(".edge").forEach(g => {
+    g.classList.toggle("on", g.dataset.from === selected || g.dataset.to === selected);
+  });
+  renderPanel();
+}
+
+function panelLink(id, reason) {
+  const item = BY_ID[id];
+  return `
+    <button type="button" class="plink" data-goto="${id}" style="--fc:${FAMILIES[item.fam].color}">
+      ${poster(item, "plink-thumb")}
+      <span>
+        <span class="plink-title"><b>${item.n}.</b> ${escapeHtml(item.en)}</span>
+        <span class="plink-reason">${escapeHtml(reason)}</span>
+      </span>
+    </button>`;
+}
+
+function renderPanel() {
+  const panel = document.getElementById("map-panel");
+  const open = !!selected && prefs.view === "map";
+  panel.hidden = !open;
+  document.body.classList.toggle("panel-open", open);
+  if (!open) return;
+
+  const item = BY_ID[selected];
+  const fam = FAMILIES[item.fam];
+  const done = watched.has(item.id);
+  const from = mapEdges.filter(e => e[1] === item.id);
+  const to = mapEdges.filter(e => e[0] === item.id);
+
+  panel.style.setProperty("--fc", fam.color);
+  panel.innerHTML = `
+    <div class="panel-head">
+      ${poster(item, "panel-thumb")}
+      <div class="panel-info">
+        <div class="panel-n">${item.n}. sırada · ${escapeHtml(item.when)}</div>
+        <div class="panel-title">${escapeHtml(item.en)}</div>
+        ${item.tr ? `<div class="panel-tr">${escapeHtml(item.tr)}</div>` : ""}
+        <div class="panel-chips">
+          <span class="chip type-${item.type}">${TYPE_LABEL[item.type]}</span>
+          <span class="chip fam"><i></i>${fam.name}</span>
+          <span class="chip">${item.rel}</span>
+        </div>
+      </div>
+      <button type="button" class="panel-close" data-act="close" aria-label="Kapat">×</button>
+    </div>
+    <button type="button" class="panel-watch${done ? " done" : ""}" data-act="watch">
+      ${CHECK_SVG}${done ? "İzledim" : "İzledim olarak işaretle"}
+    </button>
+    ${from.length ? `<h4>⬅ Bu yapımdan önce</h4><div class="plinks">${from.map(e => panelLink(e[0], e[2])).join("")}</div>` : ""}
+    ${to.length ? `<h4>Bu yapımdan sonra ➡</h4><div class="plinks">${to.map(e => panelLink(e[1], e[2])).join("")}</div>` : ""}
+    ${!from.length && !to.length ? '<p class="panel-empty">Bu yapım diğerlerine doğrudan bağlı değil; tek başına izlenebilir.</p>' : ""}`;
+}
+
+function selectNode(id, scroll) {
+  selected = id;
+  applySelection();
+  if (scroll && id) {
+    const el = viewEl.querySelector(`[data-node="${id}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+  }
+}
+
+viewEl.addEventListener("click", e => {
+  const node = e.target.closest("[data-node]");
+  if (node) {
+    selectNode(selected === node.dataset.node ? null : node.dataset.node, false);
+  } else if (e.target.closest(".map")) {
+    selectNode(null, false);
+  }
+});
+
+document.getElementById("map-panel").addEventListener("click", e => {
+  const go = e.target.closest("[data-goto]");
+  if (go) return selectNode(go.dataset.goto, true);
+  const act = e.target.closest("[data-act]");
+  if (!act) return;
+  if (act.dataset.act === "close") selectNode(null, false);
+  if (act.dataset.act === "watch") toggleItem(selected);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && selected) selectNode(null, false);
+});
+
+let lastCompact = window.innerWidth < 700;
+window.addEventListener("resize", () => {
+  const compact = window.innerWidth < 700;
+  if (compact !== lastCompact && prefs.view === "map") {
+    lastCompact = compact;
+    render();
+  }
+});
 
 // ---------- Soy ağacı görünümü ----------
 function renderTree(items) {
@@ -274,8 +543,10 @@ function renderTree(items) {
 function render() {
   const items = CHRONO.filter(matches);
   viewEl.innerHTML = items.length
-    ? (prefs.view === "tree" ? renderTree(items) : renderTable(items))
+    ? (prefs.view === "tree" ? renderTree(items) : renderMap(items))
     : '<div class="empty">Bu filtreye uyan yapım yok.</div>';
+  if (selected && !items.some(i => i.id === selected)) selected = null;
+  applySelection();
   updateProgress(items);
 }
 

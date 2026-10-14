@@ -6,7 +6,7 @@
 - İzlediklerini işaretleme ve ilerleme çubuğu (tarayıcıda saklanır)
 - Disney+ dizileri ve bonus Fox X-Men filmleri için filtreler
 - Vizyon tarihine geri sayım
-- **Tüm MCU Kronolojisi** (`kronoloji.html`): 60 film, dizi ve animasyon hikâyedeki zaman sırasıyla; tablo ve soy ağacı (seri aileleri) görünümü
+- **Tüm MCU Kronolojisi** (`kronoloji.html`): 60 film, dizi ve animasyon hikâyedeki zaman sırasıyla; oklarla bağlantı haritası ve soy ağacı (seri aileleri) görünümü
 
 ## GitHub Pages ile yayınlama
 

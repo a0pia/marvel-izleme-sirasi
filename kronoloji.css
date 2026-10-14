@@ -98,147 +98,268 @@
 .chip.type-ozel { background: rgba(245, 184, 46, .16); color: var(--gold); }
 .chip.when { background: transparent; border: 1px solid var(--line); color: #c9c9d6; }
 
-/* ---------- Tablo ---------- */
-.table-wrap {
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.chrono-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+/* ---------- Bağlantı haritası ---------- */
+.map-hint {
+  margin: 0 0 14px;
+  color: #c9c9d6;
   font-size: 14px;
 }
 
-.chrono-table th {
-  padding: 12px;
-  text-align: left;
-  color: var(--muted);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  background: #101017;
-  border-bottom: 1px solid var(--line);
+.map-hint-mobile { display: none; }
+
+.map-scroll {
+  overflow-x: auto;
+  background:
+    radial-gradient(900px 400px at 50% 0%, rgba(230, 36, 41, .08), transparent 70%),
+    var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: #34344a transparent;
 }
 
-.chrono-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(42, 42, 56, .6);
-  vertical-align: middle;
-}
+.map { position: relative; margin: 0 auto; }
 
-/* Soy ağacı gövdesi: sol sütundan aşağı inen çizgi */
-.c-trunk {
-  position: relative;
-  width: 64px;
-  text-align: center;
-}
-
-td.c-trunk::before {
-  content: "";
+.lane-head {
   position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: -1px;
-  width: 2px;
-  margin-left: -1px;
-  background: #34344a;
+  top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 3px 4px;
+  padding: 0 6px;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .02em;
+  color: #b9b9c8;
+  text-transform: uppercase;
 }
 
-.node {
-  position: relative;
+.lane-head i { width: 7px; height: 7px; border-radius: 50%; }
+.lane-head span { flex-basis: 100%; }
+
+.lane-line {
+  position: absolute;
+  width: 0;
+  border-left: 1px dashed rgba(255, 255, 255, .06);
+}
+
+.map-edges { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+
+.edge path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: .5;
+  transition: opacity .2s, stroke-width .2s;
+}
+
+.edge polygon { opacity: .75; transition: opacity .2s; }
+
+.has-sel .edge path { opacity: .06; }
+.has-sel .edge polygon { opacity: .08; }
+.has-sel .edge.on path { opacity: 1; stroke-width: 3; }
+.has-sel .edge.on polygon { opacity: 1; }
+
+.mnode {
+  position: absolute;
   z-index: 1;
-  display: inline-grid;
-  place-items: center;
-  min-width: 30px;
-  height: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: opacity .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mposter {
+  position: relative;
+  width: var(--pw);
+  height: var(--ph);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #22222e;
+  box-shadow: 0 0 0 2px var(--fc), 0 8px 18px rgba(0, 0, 0, .55);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.mposter img { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter .3s; }
+
+.mn {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  min-width: 22px;
+  height: 20px;
   padding: 0 4px;
-  border-radius: 99px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
   background: var(--fc);
   color: #0b0b10;
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 800;
-  box-shadow: 0 0 0 4px var(--bg-2);
 }
 
-.era-row td {
-  padding: 18px 12px 10px;
-  background: linear-gradient(90deg, rgba(230, 36, 41, .14), transparent 70%);
-  border-bottom: 1px solid var(--line);
+.mcheck {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  display: none;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green);
 }
 
-.era-node {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background: var(--red);
-  transform: rotate(45deg);
-  border-radius: 3px;
-  box-shadow: 0 0 0 4px #1a0f14, 0 0 18px rgba(230, 36, 41, .6);
+.mcheck svg { width: 11px; height: 11px; }
+
+.mtitle {
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 3px #000;
 }
 
-.era-name {
-  font-family: "Bebas Neue", Impact, sans-serif;
-  font-size: 26px;
-  line-height: 1;
-  letter-spacing: .03em;
-  margin-right: 12px;
-}
+.mnode.watched .mposter img { filter: grayscale(1) brightness(.55); }
+.mnode.watched .mcheck { display: grid; }
+.mnode.watched .mtitle { color: var(--muted); }
 
-.era-desc { color: var(--muted); font-size: 13px; }
-
-.row { cursor: pointer; transition: background .15s; -webkit-tap-highlight-color: transparent; }
-.row:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.mnode.upcoming .mposter { box-shadow: 0 0 0 3px var(--red), 0 0 30px rgba(230, 36, 41, .55); }
 
 @media (hover: hover) {
-  .row:hover { background: rgba(255, 255, 255, .03); }
+  .mnode:hover .mposter { transform: translateY(-3px) scale(1.04); }
 }
 
-.t-wrap { display: flex; align-items: center; gap: 12px; }
+.mnode:focus-visible { outline: none; }
+.mnode:focus-visible .mposter { box-shadow: 0 0 0 3px var(--gold); }
 
-.thumb {
+.has-sel .mnode { opacity: .22; }
+.has-sel .mnode.rel { opacity: 1; }
+.has-sel .mnode.sel { opacity: 1; z-index: 2; }
+.mnode.sel .mposter { transform: scale(1.08); transform-origin: center bottom; box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--fc), 0 12px 30px rgba(0, 0, 0, .7); }
+
+/* ---------- Bilgi paneli ---------- */
+.map-panel {
+  position: fixed;
+  left: 50%;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 30;
+  width: min(560px, calc(100% - 24px));
+  max-height: min(62vh, 560px);
+  overflow-y: auto;
+  transform: translateX(-50%);
+  padding: 14px;
+  background: rgba(19, 19, 27, .97);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--fc);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .7);
+  backdrop-filter: blur(10px);
+  animation: panel-in .22s ease;
+}
+
+.map-panel[hidden] { display: none; }
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+body.panel-open .to-top { display: none; }
+body.panel-open .chrono-container { padding-bottom: 50vh; }
+
+.panel-head { display: flex; gap: 12px; align-items: flex-start; }
+.panel-thumb { width: 56px; height: 84px; object-fit: cover; border-radius: 7px; flex: none; box-shadow: 0 0 0 2px var(--fc); }
+.panel-info { flex: 1; min-width: 0; }
+.panel-n { color: var(--muted); font-size: 12px; font-weight: 600; }
+.panel-title { font-weight: 700; font-size: 17px; line-height: 1.25; margin-top: 2px; }
+.panel-tr { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.panel-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+
+.panel-close {
   flex: none;
-  width: 42px;
-  height: 63px;
-  object-fit: cover;
-  border-radius: 6px;
-  background: #22222e;
-  box-shadow: 0 0 0 1px var(--line), 0 4px 10px rgba(0, 0, 0, .4);
-}
-
-.t-en { font-weight: 700; line-height: 1.3; }
-.t-tr { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
-.t-mobile-meta { display: none; }
-
-.c-when { color: #d4d4de; white-space: nowrap; }
-.c-rel { color: var(--muted); font-variant-numeric: tabular-nums; }
-.c-check { width: 52px; text-align: center; }
-
-.mini-check {
-  display: inline-grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 2px solid #4a4a5c;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
   border-radius: 50%;
-  transition: background .2s, border-color .2s;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
 }
 
-.mini-check svg { width: 14px; height: 14px; opacity: 0; }
+.panel-watch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
-.row.watched .mini-check { background: var(--green); border-color: var(--green); }
-.row.watched .mini-check svg { opacity: 1; }
-.row.watched .t-en { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, .3); }
-.row.watched .thumb { filter: grayscale(1) brightness(.6); }
+.panel-watch svg { width: 16px; height: 16px; opacity: .35; }
+.panel-watch.done { background: rgba(46, 204, 113, .15); border-color: var(--green); color: #7ee2a8; }
+.panel-watch.done svg { opacity: 1; }
 
-.row.upcoming { background: linear-gradient(90deg, rgba(230, 36, 41, .16), transparent 80%); }
-.row.upcoming .t-en { color: #fff; }
+.map-panel h4 {
+  margin: 16px 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.plinks { display: grid; gap: 6px; }
+
+.plink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--fc);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.plink:hover { border-color: var(--fc); }
+.plink-thumb { width: 34px; height: 51px; object-fit: cover; border-radius: 5px; flex: none; }
+.plink-title { display: block; font-size: 13.5px; font-weight: 700; line-height: 1.3; }
+.plink-title b { color: var(--fc); }
+.plink-reason { display: block; margin-top: 2px; color: #b9b9c8; font-size: 12.5px; line-height: 1.35; }
+.panel-empty { margin: 14px 0 2px; color: var(--muted); font-size: 13.5px; }
 
 /* ---------- Soy ağacı ---------- */
 .tree { --hy: 72px; padding-top: 4px; }
@@ -441,21 +562,11 @@ td.c-trunk::before {
 
 /* ---------- Mobil ---------- */
 @media (max-width: 760px) {
-  .chrono-table thead,
-  .c-type, .c-when, .c-fam, .c-rel { display: none; }
-
-  .chrono-table td { padding: 10px 8px; }
-  .c-trunk { width: 46px; }
-  .c-check { width: 40px; }
-  .node { min-width: 26px; height: 26px; font-size: 11.5px; }
-  .era-name { font-size: 22px; display: block; margin-bottom: 2px; }
-  .era-desc { font-size: 12px; }
-
-  .thumb { width: 38px; height: 57px; }
-  .t-wrap { align-items: flex-start; gap: 10px; }
-  .t-en { font-size: 14px; }
-  .t-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-  .t-mobile-meta .chip { font-size: 10.5px; padding: 2px 6px; }
+  .map-hint { font-size: 13px; }
+  .map-hint-mobile { display: block; margin-top: 4px; color: var(--muted); }
+  .lane-head { font-size: 9.5px; }
+  .mtitle { font-size: 10.5px; }
+  .panel-title { font-size: 16px; }
 
   .tree { --hy: 22px; }
 

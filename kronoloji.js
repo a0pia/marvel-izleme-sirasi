@@ -259,145 +259,312 @@ const EDGES = [
   ["fantastic-four", "doomsday", "Sahne sonrası: Doktor Doom ortaya çıkıyor"],
 ];
 
-// Haritadaki sütunlar (şeritler)
-const LANES = [
-  { name: "Kozmik", fams: ["cosmic"] },
-  { name: "Kaptan Amerika & Black Widow", fams: ["cap", "widow"] },
-  { name: "Hawkeye & Yeni Kahramanlar", fams: ["hawkeye", "heroes"] },
-  { name: "Iron Man & Örümcek-Adam", fams: ["ironman", "spidey"] },
-  { name: "Yenilmezler", fams: ["avengers"] },
-  { name: "Thor & Hulk", fams: ["thor", "hulk"] },
-  { name: "Koruyucular", fams: ["gotg"] },
-  { name: "Büyü & Wakanda", fams: ["magic", "wakanda"] },
-  { name: "Karınca Adam & Çoklu Evren", fams: ["antman", "multiverse"] },
+// Film ağacı: her yapımın tek bir "ebeveyni" var — [ebeveyn, çocuk, okun üstündeki yazı]
+const TREE_ROOT = "iron-man";
+const TREE = [
+  ["iron-man", "iron-man-2", "Tony dünyaya Iron Man olduğunu açıklıyor"],
+  ["iron-man", "incredible-hulk", "Sahne sonu: Tony, General Ross'la konuşuyor"],
+  ["iron-man", "avengers", "Sahne sonrası: Fury \"Yenilmezler Girişimi\"ni anlatıyor"],
+  ["iron-man-2", "thor", "Sahne sonrası: Mjölnir bulunuyor"],
+  ["iron-man-2", "captain-america-tfa", "Howard Stark ve Kaptan'ın kalkanı"],
+  ["incredible-hulk", "she-hulk", "Banner'ın kanı kuzeni Jennifer'a geçiyor"],
+  ["thor", "thor-dark-world", "Thor ve Loki'nin hikâyesi sürüyor"],
+  ["thor-dark-world", "ragnarok", "Odin'in tahtında kılık değiştirmiş Loki"],
+  ["ragnarok", "love-and-thunder", "Korg, Valkyrie ve Yeni Asgard"],
+  ["captain-america-tfa", "captain-marvel", "Tesseract'ın izi 1990'lara uzanıyor"],
+  ["captain-america-tfa", "winter-soldier", "Bucky, Kış Askeri olarak dönüyor"],
+  ["captain-marvel", "ms-marvel", "Kamala, Kaptan Marvel'ın en büyük hayranı"],
+  ["captain-marvel", "secret-invasion", "Skrull'lar Dünya'ya yerleşiyor"],
+  ["captain-marvel", "the-marvels", "Carol ve Monica Rambeau yeniden buluşuyor"],
+  ["winter-soldier", "falcon-ws", "Sam Wilson ve Kış Askeri sahnede"],
+  ["falcon-ws", "brave-new-world", "Sam, yeni Kaptan Amerika"],
+  ["avengers", "iron-man-3", "New York savaşı Tony'de travma bırakıyor"],
+  ["avengers", "gotg", "Sahne sonrası: Thanos ilk kez görünüyor"],
+  ["avengers", "age-of-ultron", "Loki'nin asası Ultron'u doğuruyor"],
+  ["avengers", "doctor-strange", "Yenilmezler fiziksel, büyücüler mistik tehditlere karşı"],
+  ["avengers", "hawkeye", "Kate Bishop, New York savaşında Hawkeye'ı görüyor"],
+  ["iron-man-3", "shang-chi", "Sahte Mandarin ve gerçek On Halka"],
+  ["shang-chi", "wonder-man", "Trevor Slattery geri dönüyor"],
+  ["gotg", "gotg-2", "Koruyucular'ın yeni macerası"],
+  ["gotg-2", "i-am-groot", "Bebek Groot'un maceraları"],
+  ["gotg-2", "holiday-special", "Koruyucular Noel'i kutluyor"],
+  ["gotg-2", "gotg-3", "Sahne sonrası: Adam Warlock"],
+  ["age-of-ultron", "ant-man", "Scott, Yenilmezler üssüne sızıp Falcon'la dövüşüyor"],
+  ["age-of-ultron", "civil-war", "Sokovia felaketi, Sokovia Anlaşmaları'nı getiriyor"],
+  ["age-of-ultron", "wandavision", "Wanda ve Vision'ın hikâyesi başlıyor"],
+  ["ant-man", "ant-man-wasp", "Hope, Eşek Arısı oluyor"],
+  ["ant-man-wasp", "quantumania", "Janet'in Kuantum Âlemi'ndeki sırları"],
+  ["civil-war", "black-widow", "Natasha anlaşmaları çiğnediği için kaçak"],
+  ["civil-war", "black-panther", "T'Chaka ölüyor, T'Challa kral oluyor"],
+  ["civil-war", "homecoming", "Tony, Peter Parker'ı keşfediyor"],
+  ["civil-war", "infinity-war", "Bölünmüş Yenilmezler Thanos'a karşı"],
+  ["black-widow", "thunderbolts", "Yelena ve Red Guardian yeni ekipte"],
+  ["thunderbolts", "fantastic-four", "Sahne sonrası: Fantastik Dörtlü'nün gemisi geliyor"],
+  ["black-panther", "eyes-of-wakanda", "Wakanda'nın gizli tarihi"],
+  ["black-panther", "wakanda-forever", "T'Challa'nın mirası"],
+  ["wakanda-forever", "ironheart", "Riri Williams'ın hikâyesi sürüyor"],
+  ["homecoming", "far-from-home", "Peter'ın lise hayatı ve Örümcek-Adam kimliği"],
+  ["far-from-home", "no-way-home", "Mysterio, Peter'ın kimliğini ifşa ediyor"],
+  ["no-way-home", "brand-new-day", "Artık kimse Peter Parker'ı hatırlamıyor"],
+  ["doctor-strange", "multiverse-of-madness", "Strange çoklu evrene açılıyor"],
+  ["wandavision", "agatha", "Agatha Harkness, Westview'den kurtuluyor"],
+  ["hawkeye", "echo", "Maya Lopez ve Kingpin"],
+  ["echo", "daredevil-born-again", "Kingpin New York'a dönüyor"],
+  ["infinity-war", "endgame", "Parmak şıklatmasının ardından"],
+  ["endgame", "eternals", "Blip'in geri dönüşü Ortaya Çıkış'ı tetikliyor"],
+  ["endgame", "loki-1", "2012'deki Loki, Tesseract ile kaçıyor"],
+  ["loki-1", "what-if", "Kutsal zaman çizgisi dallara ayrılıyor"],
+  ["loki-1", "loki-2", "TVA ve O Kalır'ın düşüşü"],
+  ["what-if", "marvel-zombies", "Zombi evreninin devamı"],
+  ["loki-2", "deadpool-wolverine", "TVA ve Loki'nin Zaman Ağacı"],
 ];
 
-const LANE_OF = {};
-LANES.forEach((lane, i) => lane.fams.forEach(f => { LANE_OF[f] = i; }));
+const FINALE_ID = "doomsday";
 
 const BY_ID = {};
 CHRONO.forEach(item => { BY_ID[item.id] = item; });
 
-function mapMetrics() {
-  return window.innerWidth < 700
-    ? { LW: 96, PW: 60, PH: 90, NH: 128, RH: 168, HEAD: 64 }
-    : { LW: 120, PW: 74, PH: 111, NH: 152, RH: 196, HEAD: 64 };
+// Panel için tüm bağlantılar (ağaç dalları + ek bağlantılar), aynı çift bir kez
+const ALL_LINKS = [];
+{
+  const seen = new Set();
+  for (const e of [...TREE, ...EDGES]) {
+    const key = [e[0], e[1]].sort().join("|");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ALL_LINKS.push(e);
+  }
 }
+
+const CHILDREN = {};
+const PARENT = {};
+TREE.forEach(([p, c, label]) => {
+  (CHILDREN[p] = CHILDREN[p] || []).push(c);
+  PARENT[c] = { id: p, label };
+});
+Object.values(CHILDREN).forEach(list => list.sort((a, b) => BY_ID[a].n - BY_ID[b].n));
+
+const SOLO = CHRONO.filter(i => i.id !== TREE_ROOT && i.id !== FINALE_ID && !PARENT[i.id]).map(i => i.id);
+
+const FT = { SLOT: 150, NW: 136, PW: 78, PH: 117, NH: 160, GAP: 128, PAD: 40 };
+
+// Kompakt ağaç yerleşimi: alt ağaçlar seviye seviye birbirine yaklaştırılır
+function layoutSubtree(id) {
+  const kids = CHILDREN[id] || [];
+  if (!kids.length) return { pos: { [id]: 0 }, left: [0], right: [0] };
+
+  const subs = kids.map(layoutSubtree);
+  const offsets = [0];
+  const accL = subs[0].left.slice();
+  const accR = subs[0].right.slice();
+  for (let i = 1; i < subs.length; i++) {
+    const s = subs[i];
+    let shift = -Infinity;
+    for (let d = 0; d < Math.min(accR.length, s.left.length); d++) {
+      shift = Math.max(shift, accR[d] - s.left[d] + FT.SLOT);
+    }
+    offsets.push(shift);
+    for (let d = 0; d < s.left.length; d++) {
+      accL[d] = d < accL.length ? Math.min(accL[d], s.left[d] + shift) : s.left[d] + shift;
+      accR[d] = d < accR.length ? Math.max(accR[d], s.right[d] + shift) : s.right[d] + shift;
+    }
+  }
+
+  const mid = (offsets[0] + offsets[offsets.length - 1]) / 2;
+  const pos = { [id]: 0 };
+  subs.forEach((s, i) => {
+    for (const k in s.pos) pos[k] = s.pos[k] + offsets[i] - mid;
+  });
+  return { pos, left: [0, ...accL.map(v => v - mid)], right: [0, ...accR.map(v => v + 0 - mid)] };
+}
+
+const TREE_LAYOUT = (() => {
+  const { pos } = layoutSubtree(TREE_ROOT);
+  const depth = { [TREE_ROOT]: 0 };
+  const walk = id => (CHILDREN[id] || []).forEach(c => { depth[c] = depth[id] + 1; walk(c); });
+  walk(TREE_ROOT);
+  const minX = Math.min(...Object.values(pos));
+  const maxX = Math.max(...Object.values(pos));
+  const levels = Math.max(...Object.values(depth)) + 1;
+  const W = maxX - minX + FT.SLOT + FT.PAD * 2;
+  const H = levels * (FT.NH + FT.GAP) - FT.GAP + FT.PAD * 2;
+  const at = {};
+  for (const id in pos) {
+    at[id] = { cx: pos[id] - minX + FT.SLOT / 2 + FT.PAD, top: FT.PAD + depth[id] * (FT.NH + FT.GAP) };
+  }
+  return { at, W, H };
+})();
 
 let selected = null;
-let mapEdges = [];
+let zoom = null;
 
-function renderMap(items) {
-  const M = mapMetrics();
-  const ids = new Set(items.map(i => i.id));
-  mapEdges = EDGES.filter(([a, b]) => ids.has(a) && ids.has(b));
-
-  // Satırlar: bir yapım, bağlandığı tüm yapımların ve şeridindeki öncekinin altına yerleşir
-  const preds = {};
-  mapEdges.forEach(([a, b]) => (preds[b] = preds[b] || []).push(a));
-  const row = {};
-  const laneLast = LANES.map(() => -1);
-  for (const item of items) {
-    const lane = LANE_OF[item.fam];
-    let r = laneLast[lane] + 1;
-    for (const p of preds[item.id] || []) r = Math.max(r, row[p] + 1);
-    row[item.id] = r;
-    laneLast[lane] = r;
-  }
-
-  const rows = Math.max(...Object.values(row)) + 1;
-  const W = LANES.length * M.LW;
-  const H = M.HEAD + rows * M.RH;
-  const pos = {};
-  for (const item of items) {
-    pos[item.id] = { cx: LANE_OF[item.fam] * M.LW + M.LW / 2, top: M.HEAD + row[item.id] * M.RH };
-  }
-
-  // Aynı afişe gelen/çıkan okları yatayda biraz ayır
-  const outs = {}, ins = {};
-  mapEdges.forEach(e => {
-    (outs[e[0]] = outs[e[0]] || []).push(e);
-    (ins[e[1]] = ins[e[1]] || []).push(e);
-  });
-  const spread = (list, key, id) => {
-    list.sort((x, y) => pos[x[key]].cx - pos[y[key]].cx);
-    const step = Math.min(12, (M.PW * 0.8) / Math.max(1, list.length - 1));
-    return list.findIndex(e => e[key] === id) * step - ((list.length - 1) * step) / 2;
-  };
-
-  let paths = "";
-  for (const e of mapEdges) {
-    const [a, b] = e;
-    const color = FAMILIES[BY_ID[a].fam].color;
-    const x1 = pos[a].cx + spread(outs[a], 1, b);
-    const y1 = pos[a].top + M.NH;
-    const x2 = pos[b].cx + spread(ins[b], 0, a);
-    const y2 = pos[b].top - 4;
-    const dy = Math.max(36, (y2 - y1) * 0.45);
-    paths += `
-      <g class="edge" data-from="${a}" data-to="${b}">
-        <path d="M${x1},${y1} C${x1},${y1 + dy} ${x2},${y2 - dy} ${x2},${y2 - 8}" stroke="${color}"/>
-        <polygon points="${x2 - 5},${y2 - 10} ${x2 + 5},${y2 - 10} ${x2},${y2}" fill="${color}"/>
-      </g>`;
-  }
-
-  let lanes = "";
-  LANES.forEach((lane, i) => {
-    const dots = lane.fams.map(f => `<i style="background:${FAMILIES[f].color}"></i>`).join("");
-    lanes += `
-      <div class="lane-line" style="left:${i * M.LW + M.LW / 2}px;top:${M.HEAD - 8}px;height:${H - M.HEAD}px"></div>
-      <div class="lane-head" style="left:${i * M.LW}px;width:${M.LW}px">${dots}<span>${lane.name}</span></div>`;
-  });
-
-  let nodes = "";
-  for (const item of items) {
-    const p = pos[item.id];
-    const done = watched.has(item.id);
-    nodes += `
-      <button type="button" class="mnode${done ? " watched" : ""}${item.upcoming ? " upcoming" : ""}" data-node="${item.id}"
-              style="left:${p.cx - (M.LW - 10) / 2}px;top:${p.top}px;width:${M.LW - 10}px;--fc:${FAMILIES[item.fam].color};--pw:${M.PW}px;--ph:${M.PH}px"
-              aria-label="${escapeHtml(item.en)}: bağlantıları göster">
-        <span class="mposter">
-          ${poster(item, "")}
-          <span class="mn">${item.n}</span>
-          <span class="mcheck">${CHECK_SVG}</span>
-        </span>
-        <span class="mtitle">${escapeHtml(item.en)}</span>
-      </button>`;
-  }
-
+function nodeHtml(item, style) {
+  const done = watched.has(item.id);
   return `
-    <p class="map-hint">
-      <b>Bir afişe dokun:</b> hangi yapımlardan geldiğini ve nereye bağlandığını gör. Oklar izleme yönünü gösterir; numaralar hikâye sırasıdır.
-      <span class="map-hint-mobile">Haritayı parmağınla yana kaydırabilirsin.</span>
-    </p>
-    <div class="map-scroll">
-      <div class="map" style="width:${W}px;height:${H}px">
-        ${lanes}
-        <svg class="map-edges" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${paths}</svg>
-        ${nodes}
-      </div>
-    </div>`;
+    <button type="button" class="mnode${done ? " watched" : ""}${item.upcoming ? " upcoming" : ""}${matches(item) ? "" : " dim"}" data-node="${item.id}"
+            style="${style}--fc:${FAMILIES[item.fam].color};--pw:${FT.PW}px;--ph:${FT.PH}px"
+            aria-label="${escapeHtml(item.en)}: bağlantıları göster">
+      <span class="mposter">
+        ${poster(item, "")}
+        <span class="mn">${item.n}</span>
+        <span class="mcheck">${CHECK_SVG}</span>
+      </span>
+      <span class="mtitle">${escapeHtml(item.en)}</span>
+    </button>`;
 }
 
+function renderFilmTree() {
+  const { at, W, H } = TREE_LAYOUT;
+  let lines = "";
+  let labels = "";
+
+  for (const [p, kids] of Object.entries(CHILDREN)) {
+    const a = at[p];
+    const y0 = a.top + FT.NH;
+    const barY = y0 + 22;
+    const xs = kids.map(c => at[c].cx);
+    // ebeveynden aşağı + yatay çubuk
+    lines += `<g class="edge" data-from="${p}" data-to="${kids.join(" ")}">
+      <path d="M${a.cx},${y0} V${barY}${kids.length > 1 ? ` M${Math.min(...xs)},${barY} H${Math.max(...xs)}` : ""}" stroke="#4a4a62"/></g>`;
+    for (const c of kids) {
+      const b = at[c];
+      const color = FAMILIES[BY_ID[c].fam].color;
+      const yEnd = b.top - 6;
+      lines += `<g class="edge" data-from="${p}" data-to="${c}">
+        <path d="M${b.cx},${barY} V${yEnd - 6}" stroke="${color}"/>
+        <polygon points="${b.cx - 6},${yEnd - 8} ${b.cx + 6},${yEnd - 8} ${b.cx},${yEnd + 2}" fill="${color}"/></g>`;
+      labels += `<div class="ft-label" data-from="${p}" data-to="${c}"
+        style="left:${b.cx}px;top:${(barY + yEnd) / 2 - 2}px;--fc:${color}">${escapeHtml(PARENT[c].label)}</div>`;
+    }
+  }
+
+  let nodes = "";
+  for (const id in at) {
+    nodes += nodeHtml(BY_ID[id], `left:${at[id].cx - FT.NW / 2}px;top:${at[id].top}px;width:${FT.NW}px;`);
+  }
+
+  const finale = BY_ID[FINALE_ID];
+  const finaleLinks = ALL_LINKS.filter(e => e[1] === FINALE_ID);
+  const solo = SOLO.map(id => BY_ID[id]);
+
+  return `
+    <div class="ft-toolbar">
+      <p class="map-hint"><b>Ağacı yukarıdan aşağı takip et:</b> her ok, bir filmin hangisine nasıl bağlandığını yazar. Afişe dokununca o yapımın bütün bağlantılarını görürsün. Numaralar hikâye sırasıdır.</p>
+      <div class="zoom" role="group" aria-label="Yakınlaştırma">
+        <button type="button" data-zoom="out" aria-label="Uzaklaştır">−</button>
+        <button type="button" data-zoom="fit">Sığdır</button>
+        <button type="button" data-zoom="in" aria-label="Yakınlaştır">+</button>
+      </div>
+    </div>
+    <div class="ft-scroll" id="ft-scroll">
+      <div class="ft-sizer" id="ft-sizer">
+        <div class="ft-canvas" id="ft-canvas" style="width:${W}px;height:${H}px">
+          <svg class="map-edges" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${lines}</svg>
+          ${labels}
+          <span class="ft-start" style="left:${at[TREE_ROOT].cx}px;top:${at[TREE_ROOT].top - 30}px">Başlangıç · 2008</span>
+          ${nodes}
+        </div>
+      </div>
+    </div>
+    <p class="map-hint-mobile">Ağacı parmağınla kaydırarak gez; −/+ ile yakınlaştır.</p>
+
+    <section class="ft-finale" style="--fc:${FAMILIES[finale.fam].color}">
+      <div class="ft-finale-title">▼ Bütün dallar burada birleşiyor ▼</div>
+      <div class="ft-finale-body">
+        ${nodeHtml(finale, `position:relative;width:${FT.NW + 30}px;`)}
+        <div class="ft-finale-links">
+          ${finaleLinks.map(e => `<button type="button" class="ft-chip" data-goto="${e[0]}" style="--fc:${FAMILIES[BY_ID[e[0]].fam].color}"><b>${escapeHtml(BY_ID[e[0]].en)}</b><span>${escapeHtml(e[2])}</span></button>`).join("")}
+        </div>
+      </div>
+    </section>
+
+    ${solo.length ? `
+    <section class="ft-solo">
+      <div class="ft-solo-title">Tek başına izlenebilenler</div>
+      <div class="ft-solo-row">${solo.map(i => nodeHtml(i, `position:relative;width:${FT.NW}px;`)).join("")}</div>
+    </section>` : ""}`;
+}
+
+// ---------- Yakınlaştırma ve sürükleyerek gezinme ----------
+function defaultZoom() {
+  return window.innerWidth < 700 ? 0.8 : 0.9;
+}
+
+function applyZoom(z, keepCenter) {
+  const scroller = document.getElementById("ft-scroll");
+  const sizer = document.getElementById("ft-sizer");
+  const canvas = document.getElementById("ft-canvas");
+  if (!scroller) return;
+  const { W, H } = TREE_LAYOUT;
+  const old = zoom || z;
+  const cx = (scroller.scrollLeft + scroller.clientWidth / 2) / old;
+  zoom = Math.min(1.4, Math.max(0.25, z));
+  sizer.style.width = W * zoom + "px";
+  sizer.style.height = H * zoom + "px";
+  canvas.style.transform = `scale(${zoom})`;
+  if (keepCenter) scroller.scrollLeft = cx * zoom - scroller.clientWidth / 2;
+}
+
+function centerOnRoot() {
+  const scroller = document.getElementById("ft-scroll");
+  if (!scroller) return;
+  scroller.scrollLeft = TREE_LAYOUT.at[TREE_ROOT].cx * zoom - scroller.clientWidth / 2;
+}
+
+viewEl.addEventListener("click", e => {
+  const zb = e.target.closest("[data-zoom]");
+  if (!zb) return;
+  const scroller = document.getElementById("ft-scroll");
+  if (zb.dataset.zoom === "in") applyZoom(zoom * 1.2, true);
+  if (zb.dataset.zoom === "out") applyZoom(zoom / 1.2, true);
+  if (zb.dataset.zoom === "fit") {
+    applyZoom((scroller.clientWidth - 8) / TREE_LAYOUT.W, false);
+    scroller.scrollLeft = 0;
+  }
+});
+
+// Fareyle sürükleyerek yatay/dikey gezinme (dokunmatikte tarayıcı kaydırması kullanılır)
+let drag = null;
+viewEl.addEventListener("pointerdown", e => {
+  const scroller = e.target.closest("#ft-scroll");
+  if (!scroller || e.pointerType !== "mouse" || e.button !== 0 || e.target.closest("[data-node]")) return;
+  drag = { x: e.clientX, y: e.clientY, left: scroller.scrollLeft, scroller, moved: false };
+  scroller.classList.add("dragging");
+});
+window.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x;
+  const dy = e.clientY - drag.y;
+  if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+  drag.scroller.scrollLeft = drag.left - dx;
+  window.scrollBy(0, -(e.movementY || 0));
+});
+window.addEventListener("pointerup", () => {
+  if (!drag) return;
+  drag.scroller.classList.remove("dragging");
+  setTimeout(() => { drag = null; }, 0);
+});
+
 function applySelection() {
-  const map = viewEl.querySelector(".map");
-  if (!map) return renderPanel();
+  const canvas = viewEl.querySelector("#ft-canvas");
+  if (!canvas) return renderPanel();
   const rel = new Set();
   if (selected) {
-    mapEdges.forEach(([a, b]) => {
+    ALL_LINKS.forEach(([a, b]) => {
       if (a === selected) rel.add(b);
       if (b === selected) rel.add(a);
     });
   }
-  map.classList.toggle("has-sel", !!selected);
-  map.querySelectorAll(".mnode").forEach(n => {
+  viewEl.classList.toggle("has-sel", !!selected);
+  viewEl.querySelectorAll(".mnode").forEach(n => {
     n.classList.toggle("sel", n.dataset.node === selected);
     n.classList.toggle("rel", rel.has(n.dataset.node));
   });
-  map.querySelectorAll(".edge").forEach(g => {
-    g.classList.toggle("on", g.dataset.from === selected || g.dataset.to === selected);
-  });
+  const on = el => {
+    const to = el.dataset.to.split(" ");
+    return el.dataset.from === selected || to.includes(selected);
+  };
+  canvas.querySelectorAll(".edge, .ft-label").forEach(el => el.classList.toggle("on", !!selected && on(el)));
   renderPanel();
 }
 
@@ -423,8 +590,8 @@ function renderPanel() {
   const item = BY_ID[selected];
   const fam = FAMILIES[item.fam];
   const done = watched.has(item.id);
-  const from = mapEdges.filter(e => e[1] === item.id);
-  const to = mapEdges.filter(e => e[0] === item.id);
+  const from = ALL_LINKS.filter(e => e[1] === item.id);
+  const to = ALL_LINKS.filter(e => e[0] === item.id);
 
   panel.style.setProperty("--fc", fam.color);
   panel.innerHTML = `
@@ -460,10 +627,14 @@ function selectNode(id, scroll) {
 }
 
 viewEl.addEventListener("click", e => {
+  if (drag && drag.moved) return;
   const node = e.target.closest("[data-node]");
+  const go = e.target.closest("[data-goto]");
   if (node) {
     selectNode(selected === node.dataset.node ? null : node.dataset.node, false);
-  } else if (e.target.closest(".map")) {
+  } else if (go) {
+    selectNode(go.dataset.goto, true);
+  } else if (e.target.closest("#ft-scroll")) {
     selectNode(null, false);
   }
 });
@@ -479,15 +650,6 @@ document.getElementById("map-panel").addEventListener("click", e => {
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && selected) selectNode(null, false);
-});
-
-let lastCompact = window.innerWidth < 700;
-window.addEventListener("resize", () => {
-  const compact = window.innerWidth < 700;
-  if (compact !== lastCompact && prefs.view === "map") {
-    lastCompact = compact;
-    render();
-  }
 });
 
 // ---------- Soy ağacı görünümü ----------
@@ -540,12 +702,23 @@ function renderTree(items) {
     </div>`;
 }
 
+let lastScroll = null;
+
 function render() {
+  const sc = document.getElementById("ft-scroll");
+  lastScroll = sc ? sc.scrollLeft : null;
   const items = CHRONO.filter(matches);
   viewEl.innerHTML = items.length
-    ? (prefs.view === "tree" ? renderTree(items) : renderMap(items))
+    ? (prefs.view === "tree" ? renderTree(items) : renderFilmTree())
     : '<div class="empty">Bu filtreye uyan yapım yok.</div>';
-  if (selected && !items.some(i => i.id === selected)) selected = null;
+  if (prefs.view === "map") {
+    const first = zoom === null;
+    applyZoom(zoom || defaultZoom(), false);
+    if (first) centerOnRoot();
+    else if (lastScroll !== null) document.getElementById("ft-scroll").scrollLeft = lastScroll;
+  } else {
+    zoom = null;
+  }
   applySelection();
   updateProgress(items);
 }

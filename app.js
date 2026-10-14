@@ -167,6 +167,7 @@ function render() {
   const visible = ITEMS.filter(isVisible);
   let n = 0;
   let html = "";
+  let nav = "";
 
   for (const phase of PHASES) {
     const items = visible.filter(i => i.phase === phase.id);
@@ -205,14 +206,17 @@ function render() {
     }
 
     if (!cards) continue;
+    const label = phase.id === "bonus" ? "Bonus X-Men" : phase.name;
+    nav += `<a href="#faz-${phase.id}" style="--c:${phase.color}">${label}</a>`;
     html += `
-      <section class="phase" style="--phase-color:${phase.color}">
+      <section class="phase" id="faz-${phase.id}" style="--phase-color:${phase.color}">
         <div class="phase-head"><h3>${phase.name}</h3><p>${phase.desc}</p></div>
         <div class="items">${cards}</div>
       </section>`;
   }
 
   listEl.innerHTML = html || '<div class="empty">Tebrikler, bu listedeki her şeyi izledin! 🎉</div>';
+  document.getElementById("phase-nav").innerHTML = nav;
   updateProgress(visible);
 }
 
@@ -284,6 +288,28 @@ document.getElementById("reset").addEventListener("click", () => {
   save(STORE_KEY, []);
   render();
 });
+
+// Mobil: filtre paneli
+const toolbarEl = document.getElementById("toolbar");
+const filtersBtn = document.getElementById("filters-btn");
+filtersBtn.addEventListener("click", () => {
+  const open = toolbarEl.classList.toggle("open");
+  filtersBtn.setAttribute("aria-expanded", open);
+});
+
+// Yapışkan araç çubuğunun yüksekliği (faz başlıklarına atlarken altında kalmasın)
+function syncToolbarHeight() {
+  document.documentElement.style.setProperty("--toolbar-h", toolbarEl.offsetHeight + "px");
+}
+if ("ResizeObserver" in window) new ResizeObserver(syncToolbarHeight).observe(toolbarEl);
+syncToolbarHeight();
+
+// Başa dön
+const toTop = document.getElementById("to-top");
+window.addEventListener("scroll", () => {
+  toTop.classList.toggle("show", window.scrollY > 900);
+}, { passive: true });
+toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
 // Geri sayım
 function tick() {

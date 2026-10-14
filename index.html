@@ -2,7 +2,8 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b10">
   <title>Doomsday'e Kadar Marvel İzleme Sırası</title>
   <meta name="description" content="Avengers: Doomsday'den önce hangi Marvel filmlerini ve dizilerini hangi sırayla izlemelisin? İzlediklerini işaretle, ilerlemeni takip et.">
   <meta property="og:title" content="Doomsday'e Kadar Marvel İzleme Sırası">
@@ -17,11 +18,11 @@
   <header class="hero">
     <div class="hero-inner">
       <p class="eyebrow">Marvel Sinematik Evreni · İzleme Rehberi</p>
-      <h1>Avengers: <span>Doomsday</span>'e Kadar<br>Ne İzlemeliyim?</h1>
+      <h1>Avengers:<br class="m-br"> <span>Doomsday</span>'e Kadar<br>Ne İzlemeliyim?</h1>
       <p class="lead">Doomsday'e hazır girmek için Marvel filmlerini ve önemli dizileri hangi sırayla izleyeceğin burada. İzlediklerini işaretle, ilerlemen bu tarayıcıda kaydedilsin.</p>
 
       <div class="countdown" id="countdown" aria-live="polite">
-        <div class="cd-label">Vizyona kalan süre · 18 Aralık 2026</div>
+        <div class="cd-label">Vizyona kalan süre <span class="cd-date"><span class="cd-dot">· </span>18 Aralık 2026</span></div>
         <div class="cd-grid">
           <div><b id="cd-d">--</b><small>gün</small></div>
           <div><b id="cd-h">--</b><small>saat</small></div>
@@ -42,7 +43,11 @@
         <div class="progress-text"><span id="progress-count">0 / 0</span> izlendi <span id="progress-pct" class="pct">%0</span></div>
         <div class="progress-bar"><div id="progress-fill"></div></div>
       </div>
-      <div class="controls">
+      <button type="button" class="filters-btn" id="filters-btn" aria-expanded="false" aria-controls="controls">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Filtreler
+      </button>
+      <div class="controls" id="controls">
         <div class="seg" role="group" aria-label="Liste türü">
           <button type="button" data-mode="full" class="active">Tam liste</button>
           <button type="button" data-mode="short">Kısa yol</button>
@@ -52,6 +57,7 @@
         <label class="toggle"><input type="checkbox" id="hide-watched"><span></span>İzlenenleri gizle</label>
       </div>
     </div>
+    <nav class="phase-nav" id="phase-nav" aria-label="Fazlara git"></nav>
   </div>
 
   <main class="container">
@@ -84,6 +90,10 @@
   <footer>
     <p>Hayran yapımı, resmî olmayan bir rehberdir. Marvel Studios veya Disney ile bağlantısı yoktur. Tüm isimler ilgili hak sahiplerine aittir.</p>
   </footer>
+
+  <button type="button" class="to-top" id="to-top" aria-label="Başa dön">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg>
+  </button>
 
   <script src="app.js"></script>
 </body>

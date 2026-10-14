@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b10">
+  <title>Tüm MCU Kronolojisi</title>
+  <meta name="description" content="Bütün Marvel Sinematik Evreni filmleri, dizileri ve animasyonları hikâyedeki zaman sırasıyla: tablo ve soy ağacı görünümü.">
+  <meta property="og:title" content="Tüm MCU Kronolojisi">
+  <meta property="og:description" content="Bütün Marvel filmleri ve dizileri kronolojik sırada, soy ağacı gibi.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23e62429'/><text x='50' y='70' font-size='58' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' fill='white'>M</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="kronoloji.css">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Sayfalar">
+    <div class="site-nav-inner">
+      <a href="index.html" class="brand"><span class="brand-m">M</span><span class="brand-text">MCU Rehberi</span></a>
+      <div class="site-links">
+        <a href="index.html">Doomsday Rehberi</a>
+        <a href="kronoloji.html" aria-current="page">Tüm Kronoloji</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero hero-small">
+    <div class="hero-inner">
+      <p class="eyebrow">Marvel Sinematik Evreni · Bütün Seri</p>
+      <h1>Tüm MCU<br><span>Kronolojik</span> Sırada</h1>
+      <p class="lead">Bütün Marvel Studios filmleri, dizileri ve animasyonları hikâyede geçtikleri zamana göre. İster tablo halinde dönem dönem gez, ister soy ağacında hangi seriden geldiklerini gör.</p>
+      <div class="stats">
+        <div><b id="stat-total">0</b><small>yapım</small></div>
+        <div><b id="stat-film">0</b><small>film</small></div>
+        <div><b id="stat-dizi">0</b><small>dizi</small></div>
+        <div><b id="stat-other">0</b><small>animasyon & özel</small></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar" id="toolbar">
+    <div class="toolbar-inner">
+      <div class="progress-wrap">
+        <div class="progress-text"><span id="progress-count">0 / 0</span> izlendi <span id="progress-pct" class="pct">%0</span></div>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+      </div>
+      <button type="button" class="filters-btn" id="filters-btn" aria-expanded="false" aria-controls="controls">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Filtreler
+      </button>
+      <div class="controls" id="controls">
+        <div class="seg" role="group" aria-label="Görünüm">
+          <button type="button" data-view="table">Tablo</button>
+          <button type="button" data-view="tree">Soy ağacı</button>
+        </div>
+        <div class="seg seg-type" role="group" aria-label="Tür">
+          <button type="button" data-type="all">Hepsi</button>
+          <button type="button" data-type="film">Film</button>
+          <button type="button" data-type="dizi">Dizi</button>
+          <button type="button" data-type="other">Animasyon</button>
+        </div>
+      </div>
+    </div>
+    <div class="legend" id="legend" aria-label="Seri ailesi filtresi"></div>
+  </div>
+
+  <main class="container chrono-container">
+    <div id="chrono-view"></div>
+
+    <section class="info skip">
+      <div class="info-card">
+        <h2>Notlar</h2>
+        <ul>
+          <li>Hikâye zamanları Marvel'ın resmî zaman çizelgesine göre <b>yaklaşıktır</b>; bazı yapımlar (özellikle 2026 sonrası) tartışmalıdır.</li>
+          <li><b>Loki</b> zamanın dışındaki TVA'da, <b>Deadpool & Wolverine</b>, <b>Fantastik Dörtlü</b> ve <b>What If...?</b> ise başka evrenlerde geçtiği için ayrı gösterildi.</li>
+          <li>Netflix dizileri (Daredevil, Jessica Jones…), Agents of S.H.I.E.L.D., Fox X-Men filmleri ve Sony'nin Venom filmleri ana MCU zaman çizgisinde olmadığı için listeye alınmadı.</li>
+          <li>İzlediklerin <a href="index.html">Doomsday Rehberi</a> ile ortak kaydedilir.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Hayran yapımı, resmî olmayan bir rehberdir. Marvel Studios veya Disney ile bağlantısı yoktur. Tüm isimler ve afişler ilgili hak sahiplerine aittir.</p>
+  </footer>
+
+  <button type="button" class="to-top" id="to-top" aria-label="Başa dön">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg>
+  </button>
+
+  <script src="kronoloji.js"></script>
+</body>
+</html>

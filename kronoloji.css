@@ -1,0 +1,480 @@
+/* Tüm MCU Kronolojisi — sayfaya özel stiller */
+
+.toolbar-inner,
+.chrono-container { max-width: 1100px; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Hero ---------- */
+.hero-small { padding: 48px 16px 40px; }
+
+.stats {
+  display: inline-grid;
+  grid-template-columns: repeat(4, minmax(78px, 1fr));
+  gap: 10px;
+  margin-top: 28px;
+  padding: 14px;
+  background: rgba(0, 0, 0, .35);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 6px;
+  background: var(--bg-2);
+  border-radius: 10px;
+}
+
+.stats b {
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.stats small { color: var(--muted); font-size: 12px; text-align: center; line-height: 1.25; }
+
+/* ---------- Seri filtresi (lejant) ---------- */
+.legend {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px 10px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.legend::-webkit-scrollbar { display: none; }
+
+.legend button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  color: #d0d0dc;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.legend button i { width: 9px; height: 9px; border-radius: 50%; background: var(--fc); }
+.legend button span { color: var(--muted); font-weight: 500; }
+.legend button.active { border-color: var(--fc, var(--red)); background: color-mix(in srgb, var(--fc, var(--red)) 18%, var(--bg-2)); color: #fff; }
+
+/* ---------- Ortak çipler ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--line);
+  color: #d6d6e0;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip.fam i { width: 8px; height: 8px; border-radius: 50%; background: var(--fc); flex: none; }
+.chip.type-dizi { background: rgba(80, 140, 255, .16); color: #8db4ff; }
+.chip.type-animasyon { background: rgba(180, 100, 255, .16); color: #c9a2ff; }
+.chip.type-ozel { background: rgba(245, 184, 46, .16); color: var(--gold); }
+.chip.when { background: transparent; border: 1px solid var(--line); color: #c9c9d6; }
+
+/* ---------- Tablo ---------- */
+.table-wrap {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.chrono-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.chrono-table th {
+  padding: 12px;
+  text-align: left;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: #101017;
+  border-bottom: 1px solid var(--line);
+}
+
+.chrono-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(42, 42, 56, .6);
+  vertical-align: middle;
+}
+
+/* Soy ağacı gövdesi: sol sütundan aşağı inen çizgi */
+.c-trunk {
+  position: relative;
+  width: 64px;
+  text-align: center;
+}
+
+td.c-trunk::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: -1px;
+  width: 2px;
+  margin-left: -1px;
+  background: #34344a;
+}
+
+.node {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: var(--fc);
+  color: #0b0b10;
+  font-size: 12.5px;
+  font-weight: 800;
+  box-shadow: 0 0 0 4px var(--bg-2);
+}
+
+.era-row td {
+  padding: 18px 12px 10px;
+  background: linear-gradient(90deg, rgba(230, 36, 41, .14), transparent 70%);
+  border-bottom: 1px solid var(--line);
+}
+
+.era-node {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: var(--red);
+  transform: rotate(45deg);
+  border-radius: 3px;
+  box-shadow: 0 0 0 4px #1a0f14, 0 0 18px rgba(230, 36, 41, .6);
+}
+
+.era-name {
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: .03em;
+  margin-right: 12px;
+}
+
+.era-desc { color: var(--muted); font-size: 13px; }
+
+.row { cursor: pointer; transition: background .15s; -webkit-tap-highlight-color: transparent; }
+.row:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+
+@media (hover: hover) {
+  .row:hover { background: rgba(255, 255, 255, .03); }
+}
+
+.t-wrap { display: flex; align-items: center; gap: 12px; }
+
+.thumb {
+  flex: none;
+  width: 42px;
+  height: 63px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #22222e;
+  box-shadow: 0 0 0 1px var(--line), 0 4px 10px rgba(0, 0, 0, .4);
+}
+
+.t-en { font-weight: 700; line-height: 1.3; }
+.t-tr { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.t-mobile-meta { display: none; }
+
+.c-when { color: #d4d4de; white-space: nowrap; }
+.c-rel { color: var(--muted); font-variant-numeric: tabular-nums; }
+.c-check { width: 52px; text-align: center; }
+
+.mini-check {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #4a4a5c;
+  border-radius: 50%;
+  transition: background .2s, border-color .2s;
+}
+
+.mini-check svg { width: 14px; height: 14px; opacity: 0; }
+
+.row.watched .mini-check { background: var(--green); border-color: var(--green); }
+.row.watched .mini-check svg { opacity: 1; }
+.row.watched .t-en { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, .3); }
+.row.watched .thumb { filter: grayscale(1) brightness(.6); }
+
+.row.upcoming { background: linear-gradient(90deg, rgba(230, 36, 41, .16), transparent 80%); }
+.row.upcoming .t-en { color: #fff; }
+
+/* ---------- Soy ağacı ---------- */
+.tree { --hy: 72px; padding-top: 4px; }
+
+.tree-root {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px 12px 14px;
+  border: 1px solid var(--red);
+  border-radius: 14px;
+  background:
+    radial-gradient(300px 120px at 0% 0%, rgba(230, 36, 41, .3), transparent 70%),
+    #160709;
+  box-shadow: 0 10px 30px rgba(230, 36, 41, .15);
+}
+
+.root-logo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--red);
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.root-name { font-family: "Bebas Neue", Impact, sans-serif; font-size: 26px; line-height: 1; letter-spacing: .02em; }
+.root-sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+
+.branches { margin-left: 35px; padding-top: 22px; }
+
+.branch {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 0 0 26px 34px;
+}
+
+/* gövde */
+.branch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #34344a;
+}
+
+.branch:first-child::before { top: -22px; }
+.branch:last-child::before { bottom: auto; height: var(--hy); }
+
+/* gövdeden dala */
+.branch::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(var(--hy) - 1px);
+  width: 34px;
+  height: 2px;
+  background: var(--fc);
+}
+
+.branch-head {
+  position: relative;
+  flex: none;
+  width: 178px;
+  margin-top: calc(var(--hy) - 26px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--fc);
+  border-radius: 10px;
+}
+
+.branch-head::after {
+  content: "";
+  position: absolute;
+  right: -19px;
+  top: 50%;
+  width: 18px;
+  height: 2px;
+  background: var(--fc);
+}
+
+.branch-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--fc); box-shadow: 0 0 10px var(--fc); }
+.branch-name { font-weight: 700; font-size: 13.5px; line-height: 1.25; }
+.branch-count { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+
+.twigs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: #34344a transparent;
+}
+
+.twig {
+  position: relative;
+  flex: none;
+  width: 96px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* dal üzerindeki yapımlar arası bağ */
+.twig + .twig::before {
+  content: "";
+  position: absolute;
+  left: -18px;
+  top: calc(var(--hy) - 1px);
+  width: 18px;
+  height: 2px;
+  background: var(--fc);
+}
+
+.twig:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
+
+.twig-poster {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #22222e;
+  box-shadow: 0 0 0 1px var(--line), 0 8px 18px rgba(0, 0, 0, .45);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.twig-poster img { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter .3s; }
+
+@media (hover: hover) {
+  .twig:hover .twig-poster { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--fc), 0 12px 24px rgba(0, 0, 0, .6); }
+}
+
+.twig:active .twig-poster { transform: scale(.96); }
+
+.twig-n {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--fc);
+  color: #0b0b10;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+.twig-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, .85);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .45);
+}
+
+.twig-check svg { width: 12px; height: 12px; opacity: 0; }
+
+.twig.watched .twig-poster img { filter: grayscale(1) brightness(.5); }
+.twig.watched .twig-check { background: var(--green); border-color: var(--green); }
+.twig.watched .twig-check svg { opacity: 1; }
+.twig.watched .twig-title { color: var(--muted); }
+
+.twig.upcoming .twig-poster { box-shadow: 0 0 0 2px var(--red), 0 8px 24px rgba(230, 36, 41, .35); }
+
+.twig-title {
+  margin-top: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.twig-when { margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+/* ---------- Mobil ---------- */
+@media (max-width: 760px) {
+  .chrono-table thead,
+  .c-type, .c-when, .c-fam, .c-rel { display: none; }
+
+  .chrono-table td { padding: 10px 8px; }
+  .c-trunk { width: 46px; }
+  .c-check { width: 40px; }
+  .node { min-width: 26px; height: 26px; font-size: 11.5px; }
+  .era-name { font-size: 22px; display: block; margin-bottom: 2px; }
+  .era-desc { font-size: 12px; }
+
+  .thumb { width: 38px; height: 57px; }
+  .t-wrap { align-items: flex-start; gap: 10px; }
+  .t-en { font-size: 14px; }
+  .t-mobile-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .t-mobile-meta .chip { font-size: 10.5px; padding: 2px 6px; }
+
+  .tree { --hy: 22px; }
+
+  .branch { flex-direction: column; gap: 10px; padding-left: 22px; }
+  .branch::after { width: 22px; }
+  .branch-head { width: auto; margin-top: 0; min-height: 44px; padding: 6px 10px; }
+  .branch-head::after { display: none; }
+  .twigs { width: 100%; gap: 14px; }
+  .twig { width: 86px; }
+  .twig + .twig::before { left: -14px; width: 14px; top: 64px; }
+}
+
+@media (max-width: 600px) {
+  .hero-small { padding: 32px 16px 28px; }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 10px; }
+  .stats b { font-size: 28px; }
+  .stats small { font-size: 10.5px; }
+  .tree-root { padding: 10px 14px 10px 10px; }
+  .root-logo { width: 38px; height: 38px; font-size: 28px; }
+  .branches { margin-left: 28px; }
+  .root-name { font-size: 22px; }
+}

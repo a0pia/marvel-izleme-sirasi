@@ -6,6 +6,7 @@
 - İzlediklerini işaretleme ve ilerleme çubuğu (tarayıcıda saklanır)
 - Disney+ dizileri ve bonus Fox X-Men filmleri için filtreler
 - Vizyon tarihine geri sayım
+- **Tüm MCU Kronolojisi** (`kronoloji.html`): 60 film, dizi ve animasyon hikâyedeki zaman sırasıyla; tablo ve soy ağacı (seri aileleri) görünümü
 
 ## GitHub Pages ile yayınlama
 
@@ -16,4 +17,4 @@
 
 Hayran yapımı, resmî olmayan bir rehberdir. Marvel Studios veya Disney ile bağlantısı yoktur.
 
-Afiş görselleri Wikipedia'daki film/dizi sayfalarından alınmıştır ve `posters/` klasöründe bulunur; telif hakları ilgili stüdyolara aittir.
+Afiş görselleri Wikipedia ve TMDB'den alınmıştır ve `posters/` klasöründe bulunur; telif hakları ilgili stüdyolara aittir.

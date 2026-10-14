@@ -75,9 +75,9 @@ const ITEMS = [
     note: "Endgame sonrası dünya ve Mysterio." },
 
   // Faz 4
-  { id: "wandavision", phase: 4, type: "dizi", en: "WandaVision", year: 2021,
+  { id: "wandavision", logo: true, img: "wandavision.png", phase: 4, type: "dizi", en: "WandaVision", year: 2021,
     note: "Wanda'nın yası ve Scarlet Witch'in doğuşu." },
-  { id: "falcon-ws", phase: 4, key: true, type: "dizi", en: "The Falcon and the Winter Soldier", tr: "Falcon ve Kış Askeri", year: 2021,
+  { id: "falcon-ws", logo: true, img: "falcon-ws.png", phase: 4, key: true, type: "dizi", en: "The Falcon and the Winter Soldier", tr: "Falcon ve Kış Askeri", year: 2021,
     note: "Sam Wilson yeni Kaptan Amerika oluyor; Bucky geçmişiyle yüzleşiyor." },
   { id: "black-widow", phase: 4, type: "film", en: "Black Widow", year: 2021,
     note: "Natasha'nın geçmişi ve Yelena Belova — Thunderbolts'un lideri." },
@@ -87,13 +87,13 @@ const ITEMS = [
     note: "Shang-Chi ile tanışma; Doomsday kadrosunda." },
   { id: "eternals", phase: 4, type: "film", en: "Eternals", year: 2021,
     note: "Kozmik Celestial'lar ve Dünya'nın gizli tarihi." },
-  { id: "hawkeye", phase: 4, type: "dizi", en: "Hawkeye", year: 2021,
+  { id: "hawkeye", logo: true, img: "hawkeye.png", phase: 4, type: "dizi", en: "Hawkeye", year: 2021,
     note: "Kate Bishop ve Yelena'nın Natasha yası." },
   { id: "no-way-home", phase: 4, key: true, type: "film", en: "Spider-Man: No Way Home", tr: "Örümcek-Adam: Eve Dönüş Yok", year: 2021,
     note: "Çoklu evren kapıları açılıyor, eski Örümcek-Adamlar geliyor ve herkes Peter'ı unutuyor." },
   { id: "multiverse-of-madness", phase: 4, key: true, type: "film", en: "Doctor Strange in the Multiverse of Madness", tr: "Doktor Strange Çoklu Evren Çılgınlığında", year: 2022,
     note: "Çoklu evren, Illuminati ve Patrick Stewart'ın Profesör X'i." },
-  { id: "ms-marvel", phase: 4, type: "dizi", en: "Ms. Marvel", year: 2022,
+  { id: "ms-marvel", logo: true, phase: 4, type: "dizi", en: "Ms. Marvel", year: 2022,
     note: "Kamala Khan — ve MCU'da 'mutant' kelimesinin ilk duyulduğu an." },
   { id: "love-and-thunder", phase: 4, type: "film", en: "Thor: Love and Thunder", tr: "Thor: Aşk ve Gök Gürültüsü", year: 2022,
     note: "Thor'un Endgame sonrası yolculuğu." },
@@ -187,16 +187,20 @@ function render() {
       cards += `
         <div class="item${done ? " watched" : ""}${item.finale ? " finale" : ""}" data-id="${item.id}"
              role="checkbox" aria-checked="${done}" aria-label="${escapeHtml(label)}" tabindex="0">
-          <div class="num">${item.finale ? "★" : n}</div>
-          <div>
-            <div class="title-row">
-              <h4 class="title">${escapeHtml(item.en)}</h4>
-              ${item.tr ? `<span class="tr-title">${escapeHtml(item.tr)}</span>` : ""}
-            </div>
-            <p class="note">${escapeHtml(item.note)}</p>
-            <div class="meta">${badges.join("")}</div>
+          <div class="poster${item.logo ? " logo" : ""}">
+            <img src="posters/${item.img || item.id + ".jpg"}" alt="${escapeHtml(item.en)} afişi" loading="lazy">
+            <span class="poster-fallback">${escapeHtml(item.en)}</span>
+            <div class="num">${item.finale ? "★" : n}</div>
+            <div class="check">${CHECK_SVG}</div>
+            ${item.finale ? "" : '<div class="watched-label">İZLENDİ</div>'}
           </div>
-          <div class="check">${CHECK_SVG}</div>
+          <div class="info-body">
+            ${item.finale ? '<p class="finale-eyebrow">Final · 18 Aralık 2026</p>' : ""}
+            <h4 class="title">${escapeHtml(item.en)}</h4>
+            ${item.tr ? `<span class="tr-title">${escapeHtml(item.tr)}</span>` : ""}
+            <div class="meta">${badges.join("")}</div>
+            <p class="note">${escapeHtml(item.note)}</p>
+          </div>
         </div>`;
     }
 
@@ -232,6 +236,11 @@ listEl.addEventListener("click", e => {
   const card = e.target.closest(".item");
   if (card) toggleItem(card.dataset.id);
 });
+
+// Afiş yüklenemezse isimli yedek kart göster
+listEl.addEventListener("error", e => {
+  if (e.target.tagName === "IMG") e.target.parentElement.classList.add("broken");
+}, true);
 
 listEl.addEventListener("keydown", e => {
   if (e.key !== " " && e.key !== "Enter") return;

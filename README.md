@@ -15,3 +15,5 @@
 4. Bir iki dakika sonra site `https://KULLANICI_ADI.github.io/DEPO_ADI/` adresinde yayında olur.
 
 Hayran yapımı, resmî olmayan bir rehberdir. Marvel Studios veya Disney ile bağlantısı yoktur.
+
+Afiş görselleri Wikipedia'daki film/dizi sayfalarından alınmıştır ve `posters/` klasöründe bulunur; telif hakları ilgili stüdyolara aittir.
